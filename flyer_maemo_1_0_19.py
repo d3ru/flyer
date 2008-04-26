@@ -1,6 +1,4 @@
-#import e32
 import socket
-import asyncore
 
 debug = True
 
@@ -22,7 +20,7 @@ class FlyerSettings( dict ):
         self["MAX_CLIENT"] = 2000
         self["BUFFER_SIZE"] = 1024
         self["FLYER_VERSION"] = "1,0,19"
-        self["POLICY_FILE"] = _policyFile ='<?xml version="1.0" encoding="UTF-8"?><cross-domain-policy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.adobe.com/xml/schemas/PolicyFileSocket.xsd"><allow-access-from domain="*" to-ports="*" secure="false" /><site-control permitted-cross-domain-policies="master-only" /></cross-domain-policy>'
+        self["POLICY_FILE"] = _policyFile ='<?xml version="1.0" encoding="UTF-8"?><cross-domain-policy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.adobe.com/xml/schemas/PolicyFileSocket.xsd"><allow-access-from domain="*" to-ports="*" secure="false" /><site-control permitted-cross-domain-policies="master-only" /></cross-domain-policy>\n'
         
 # Flyer Maemo
 # Define the hello world application
@@ -87,8 +85,10 @@ class FlyerServerSocket:
             except KeyError:
                 printd("Invalid Command. Details Error #0001")
         else:
+            self._channel.send( FlyerSettings()["POLICY_FILE"] )
             printd("policy file received")
-
+            
+        #self._channelWatcher( self._channel.recv( FlyerSettings()["BUFFER_SIZE"] ))
         #self._channel.recv(FlyerSettings()["BUFFER_SIZE"], cb=self._channelWatcher)
 
     ## Listen interface for incomming connection. Handle incomming connection request.
@@ -101,8 +101,7 @@ class FlyerServerSocket:
             self._details = details
             if self._running:
                 printd( 'New connection with: ' + str(details) )
-                self._channel.setblocking( 1 )
-                self._channel.send( FlyerSettings()["POLICY_FILE"] )
+                self._channel.setblocking( 1 )                
                 #self._channel.recv(FlyerSettings()["BUFFER_SIZE"], cb=self._channelWatcher)
                 self._channelWatcher( self._channel.recv( FlyerSettings()["BUFFER_SIZE"] ))
                 ##printd( 'host: ' + str(details[0]) )
