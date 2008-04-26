@@ -81,7 +81,7 @@ class FlyerServerSocket:
         if("policy-file-request" not in msg):
             if msg is not None:
                 iParametersDict['COMMAND'] = arrData[0] # command name
-                iParametersDict[''] = arrData[1]        # parameters
+                #iParametersDict[''] = arrData[1]        # parameters
                 # printd("Received command " + arrData[0])
             try:
                 self._broadcastMessage( self._iCommands[iParametersDict['COMMAND']]() )
