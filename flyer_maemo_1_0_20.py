@@ -19,7 +19,7 @@ class FlyerSettings( dict ):
         self["PORT"]  = "843"
         self["MAX_CLIENT"] = 2000
         self["BUFFER_SIZE"] = 1024
-        self["FLYER_VERSION"] = "1,0,19"
+        self["FLYER_VERSION"] = "1,0,20"
         self["POLICY_FILE"] = _policyFile ='<?xml version="1.0" encoding="UTF-8"?><cross-domain-policy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.adobe.com/xml/schemas/PolicyFileSocket.xsd"><allow-access-from domain="*" to-ports="*" secure="false" /><site-control permitted-cross-domain-policies="master-only" /></cross-domain-policy>\0'
         
 # Flyer Maemo
@@ -32,9 +32,11 @@ class FlyerMaemo:
         if(aFilePath is not None):
             self._filePath = aFilePath
 
-    def _helloMaemo(self, aCallback=None):
-        printd("Hello maemo")
-        return "hello maemo"
+    def _helloMaemo(self, aText=None, aCallback=None):
+        if(aText == None):
+            aText = "Maemo"
+            
+        return "Hello " + aText + "!"
 
 # FlyerServerSocket
 class FlyerServerSocket:
@@ -73,7 +75,7 @@ class FlyerServerSocket:
     #  @param aData: Data received from the client
     def _channelWatcher( self, aData ):
         msg = aData.replace("\0", "")
-        arrData = msg.split("|")
+        arrData = msg.split(":")
         iParametersDict = {}
 
         # printd("\n\nMessage received: " + aData)
@@ -82,12 +84,12 @@ class FlyerServerSocket:
             if msg is not None:
                try:
                    iParametersDict['COMMAND'] = arrData[0] # command name
-                   iParametersDict['VALUE'] = arrData[1]   # parameters
+                   iParametersDict['VALUES'] = arrData[1]   # parameters
                    # printd("Received command " + arrData[0])
                except:
                       printd("Invalid command/argument. Details Error #0002")
             try:
-                self._broadcastMessage( self._iCommands[iParametersDict['COMMAND']]() )
+                self._broadcastMessage( self._iCommands[iParametersDict['COMMAND']]( iParametersDict['VALUES'] ) )
                 block = ""
                 while "exit" not in block:
                       # printd(len(block))
