@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="vertical"
+	backgroundColor="#000000"
+	applicationComplete="startApplication()">
+	
+	<mx:Style>
+		Label {
+			color: #FFFFFF;
+		}
+	</mx:Style>
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.events.ValidationResultEvent;
+			import flash.net.XMLSocket;
+			import flash.system.Security;
+			import flash.display.StageDisplayState;
+			
+			public var _socketConnection:XMLSocket;
+			private var _commandName:String = "sayHello";
+			
+			private function startApplication():void {
+				try {
+					stage.displayState = StageDisplayState.FULL_SCREEN;
+				} catch (e:SecurityError){
+					txtStatus.text = "Error: " + (e.message);
+				}
+			}
+			
+			private function connect():void {
+				_socketConnection = new XMLSocket();
+				_socketConnection.connect("localhost", 843);
+				
+				_socketConnection.addEventListener(Event.CONNECT,
+												   onConnect);
+												   
+				_socketConnection.addEventListener(IOErrorEvent.IO_ERROR,
+												   onIOError);
+												   
+				_socketConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR,
+												   onSecurityError);
+												   
+				_socketConnection.addEventListener(DataEvent.DATA,
+													onReceivedData);
+													
+				txtStatus.text = "Connecting";
+			}
+			
+			private function disconnect():void {
+				_socketConnection.close();
+				btnConnect.enabled = true;
+				btnDisconnect.enabled = false;
+				txtStatus.text = "Disconnect";
+			}
+			
+			private function send():void {
+				if(nameValidator.validate().type == ValidationResultEvent.VALID) {
+					_socketConnection.send("sayHello:" + txtName.text);
+				}
+			}
+			
+			private function onConnect(e:Event):void {
+				txtStatus.text = "Connected";
+				btnConnect.enabled = !_socketConnection.connected;
+				btnDisconnect.enabled = _socketConnection.connected;
+				btnPyMaemo.enabled = _socketConnection.connected;
+			}
+			
+			private function onReceivedData(e:DataEvent):void {
+				txtStatus.text = "Data received: " + e.data;
+			}
+			
+			private function onIOError(e:IOErrorEvent):void {
+				txtStatus.text = "Error connecting. Details " + e.text;
+			}	
+			
+			private function onSecurityError(e:SecurityErrorEvent):void {
+				txtStatus.text = "Security Error. Details " + e.text;
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:StringValidator id="nameValidator" source="{txtName}" required="true" property="text" />
+	
+	<mx:Label text="{flash.system.Capabilities.version}" />
+	<mx:Label text="{flash.system.Capabilities.os}" />
+
+	<mx:Label id="txtStatus" text="not connected" />
+		
+	<mx:HBox>
+		<mx:Label text="Type your name: " />
+		<mx:TextInput id="txtName" />
+	</mx:HBox>
+	
+	<mx:HBox>
+		<mx:Button id="btnConnect" label="Connect" click="connect()"/>
+		<mx:Button id="btnPyMaemo" label="Test command" click="send()" enabled="false"/>
+		<mx:Button id="btnDisconnect" label="Disconnect" click="disconnect()" enabled="false" />
+	</mx:HBox>
+	
+	<mx:Spacer height="100%" />
+	
+	<mx:Label text="0.2.2" />
+</mx:Application>
